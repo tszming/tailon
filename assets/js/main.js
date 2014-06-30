@@ -62,7 +62,8 @@ var CommandModel = Backbone.Model.extend({
 
 var UiModel = Backbone.Model.extend({
   defaults: {
-    'panel-hidden': false
+    'panel-hidden': false,
+    'js-console': false
   }
 });
 
@@ -171,6 +172,7 @@ var PanelView = Backbone.View.extend({
   },
 
   events: {
+    'click .toolbar-item #jsconsole input':  'setjsconsole',
     'click .toolbar-item .button-group .action-hide-toolbar':  'sethidden',
     'click .toolbar-item .button-group .action-clear-logview': 'clearlogview'
   },
@@ -185,6 +187,14 @@ var PanelView = Backbone.View.extend({
       this.$el.slideUp('fast');
     } else {
       this.$el.slideDown('fast');
+    }
+  },
+
+  setjsconsole: function() {
+    if (this.model.get('js-console')) {
+      this.model.set('js-console', false);
+    } else {
+      this.model.set('js-console', true);
     }
   },
 
@@ -353,6 +363,20 @@ function onMessage(e) {
       for (i=0; i<payload.length; i++) {
         line = escapeHtml(payload[i]);
         spans.push(logEntry(line.replace(/\n$/, '')));
+        if (uimodel.get('js-console')) {
+          try {
+            var json = JSON.parse(line);
+            var loglevel = 'log';
+            if ('level' in json && (json['level'] === 'debug' || json['level'] === 'info' || json['level'] === 'warn' || json['level'] === 'error')) {
+              loglevel = json['level'];
+            }
+            delete json['level'];
+            console[loglevel](json);
+          }
+          catch (e) {
+            console.log(line);
+          }
+        }
       }
     });
   }

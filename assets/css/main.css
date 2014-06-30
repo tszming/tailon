@@ -284,3 +284,7 @@ input:-ms-input-placeholder {
   color: #c5c8c6;
   font-style: italic;
   text-align: center; }
+
+label {
+  color: #c5c8c6;
+}
